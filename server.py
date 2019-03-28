@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, send_file, jsonify
+from pdf2image import convert_from_path
 from PIL import Image
 import pandas as pd
 import datetime
@@ -22,10 +23,10 @@ def upload():
     
     # path for each folder
     # incoming folder for incoming photos from the app
-    # analyzed folder is to store photos that has been analyzed
+    # analysed folder is to store photos that has been analysed
     # results folder is to store results of each analysis
     incoming_folder = os.path.join(APP_ROOT, 'incoming/')
-    analyzed_folder = os.path.join(APP_ROOT, 'analyzed/')
+    analysed_folder = os.path.join(APP_ROOT, 'analysed/')
     results_folder = os.path.join(APP_ROOT, 'results/')
 
     # accept incoming json
@@ -54,7 +55,7 @@ def upload():
     if not os.path.exists(os.path.join(results_folder, phone_brand)):
         os.mkdir(os.path.join(results_folder, phone_brand))
     
-    # run r script that analyze the photo
+    # run r script that analyse the photo
     os.system("Rscript assessimagefun3.R")
 
     # get current system datetime
@@ -91,16 +92,16 @@ def upload():
     # get the full path of the image file
     current_image_file = os.path.join(incoming_folder, current_image_file)
 
-    # move analyzed photos to analyzed folder
+    # move analysed photos to analysed folder
     if os.path.splitext(current_image_file)[-1].lower() == ".jpeg":
         new_filename = phone_brand + " " + location + " " + Datetime + ".jpeg"
         image_filename = new_filename
-        shutil.move(current_image_file, os.path.join(analyzed_folder, new_filename))
+        shutil.move(current_image_file, os.path.join(analysed_folder, new_filename))
 
     elif os.path.splitext(current_image_file)[-1].lower() == ".jpg":
         new_filename = phone_brand + " " + location + " " + Datetime + ".jpg"
         image_filename = new_filename
-        shutil.move(current_image_file, os.path.join(analyzed_folder, new_filename))
+        shutil.move(current_image_file, os.path.join(analysed_folder, new_filename))
 
     # list all the remaining folders in incoming folder
     files =os.listdir(incoming_folder)
@@ -153,7 +154,33 @@ def upload():
     all_result.to_csv(os.path.join(results_folder, "all_results.csv"), index = False)
     print(ssc_value)
 
-    return jsonify(ssc = ssc_value)
+    # converting pdf into images
+    # get the filepath for pdf file
+    new_pdf = os.path.join(results_folder, new_pdf)
+    # set image dpi to 500
+    pages = convert_from_path(new_pdf, 500)
 
+    # get the first page of the pdf only
+    # save it as jpg file
+    for page in pages:
+        page.save(os.path.join(results_folder, 'pdf_img.jpg'),'JPEG')
+        break
+
+    # open the jpg file and convert it into bytes
+    byte = None
+    with open(os.path.join(results_folder, 'pdf_img.jpg'), 'rb')as image:
+        img = image.read()
+        byte = base64.b64encode(img)
+        byte = str(byte)
+        byte = byte[1:]
+        byte = byte[1:]
+        byte = byte[:-1]
+
+    # remove the image file after sending to avoid confusion
+    os.remove(os.path.join(results_folder, 'pdf_img.jpg'))
+
+    return jsonify(ssc = ssc_value, pdf_img = byte)
+
+# run main
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=False)
