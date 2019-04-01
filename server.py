@@ -172,8 +172,7 @@ def upload():
         img = image.read()
         byte = base64.b64encode(img)
         byte = str(byte)
-        byte = byte[1:]
-        byte = byte[1:]
+        byte = byte[2:]
         byte = byte[:-1]
 
     # remove the image file after sending to avoid confusion
