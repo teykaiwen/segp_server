@@ -41,7 +41,7 @@ def upload():
     lat = incoming_json['latitude']
     long = incoming_json['longitude']
     image = incoming_json['image']
-    # decomind image file
+    # decoding image file
     image = bytes(image, 'utf-8')
     image = base64.b64decode(image)
     image = Image.open(io.BytesIO(image))
@@ -50,6 +50,10 @@ def upload():
     old_image_file = ""
     current_image_file = ""
     image_filename = ""
+
+    # location trimming to prevent long location name
+    location = location.split(',')
+    location = location[0]
 
     # make a folder with the phone brand's name
     if not os.path.exists(os.path.join(results_folder, phone_brand)):
@@ -121,6 +125,7 @@ def upload():
     new_pdf = phone_brand + " " + location + " " + Datetime + ".pdf"
     new_pdf  = os.path.join(os.path.join(results_folder, phone_brand_path), new_pdf)
 
+    # move the files accordingly
     shutil.move(old_csv, new_csv)
     shutil.move(old_pdf, new_pdf)
 
@@ -135,12 +140,15 @@ def upload():
     df['longitude'] = long
     band1_median = df['median']
     band1_median = band1_median[0]
-    df = df.drop(df.columns[0], axis = 1)
-    df.to_csv(new_csv, index = False, header = True)
     # calculate ssc value
     # formula given by client
     ssc_value = -0.0323 * band1_median + 4.5155
     ssc_value = round(ssc_value, 6)
+    df['ssc'] = ssc_value
+    df.at[1, 'ssc'] = None
+    df.at[2, 'ssc'] = None
+    df = df.drop(df.columns[0], axis = 1)
+    df.to_csv(new_csv, index = False, header = True)
 
     # append all the new results to the all_results csv file
     all_result = pd.read_csv(os.path.join(results_folder, "all_results.csv"))
@@ -172,7 +180,9 @@ def upload():
         img = image.read()
         byte = base64.b64encode(img)
         byte = str(byte)
+        # remove b'
         byte = byte[2:]
+        # remove '
         byte = byte[:-1]
 
     # remove the image file after sending to avoid confusion
