@@ -52,8 +52,8 @@ def upload():
     image_filename = ""
 
     # location trimming to prevent long location name
-    location = location.split(',')
-    location = location[0]
+    location_for_filename = location.split(',')
+    location_for_filename = location_for_filename[0]
 
     # make a folder with the phone brand's name
     if not os.path.exists(os.path.join(results_folder, phone_brand)):
@@ -120,9 +120,9 @@ def upload():
 
     # rename all the results file accordingly
     phone_brand_path = phone_brand + "/"
-    new_csv = phone_brand + " " + location + " " + Datetime + "TableOut.csv"
+    new_csv = phone_brand + " " + location_for_filename + " " + Datetime + "TableOut.csv"
     new_csv = os.path.join(os.path.join(results_folder, phone_brand_path), new_csv)
-    new_pdf = phone_brand + " " + location + " " + Datetime + ".pdf"
+    new_pdf = phone_brand + " " + location_for_filename + " " + Datetime + ".pdf"
     new_pdf  = os.path.join(os.path.join(results_folder, phone_brand_path), new_pdf)
 
     # move the files accordingly
