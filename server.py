@@ -55,9 +55,13 @@ def upload():
     location_for_filename = location.split(',')
     location_for_filename = location_for_filename[0]
 
-    # make a folder with the phone brand's name
+    # make a folder with the phone brand's name in results folder
     if not os.path.exists(os.path.join(results_folder, phone_brand)):
         os.mkdir(os.path.join(results_folder, phone_brand))
+
+    # make a folder with the phone brand's name in analysed folder
+    if not os.path.exists(os.path.join(analysed_folder, phone_brand)):
+        os.mkdir(os.path.join(analysed_folder, phone_brand))
     
     # run r script that analyse the photo
     os.system("Rscript assessimagefun3.R")
@@ -100,12 +104,12 @@ def upload():
     if os.path.splitext(current_image_file)[-1].lower() == ".jpeg":
         new_filename = phone_brand + " " + location + " " + Datetime + ".jpeg"
         image_filename = new_filename
-        shutil.move(current_image_file, os.path.join(analysed_folder, new_filename))
+        shutil.move(current_image_file, os.path.join(os.path.join(analysed_folder, phone_brand), new_filename))
 
     elif os.path.splitext(current_image_file)[-1].lower() == ".jpg":
         new_filename = phone_brand + " " + location + " " + Datetime + ".jpg"
         image_filename = new_filename
-        shutil.move(current_image_file, os.path.join(analysed_folder, new_filename))
+        shutil.move(current_image_file, os.path.join(os.path.join(analysed_folder, phone_brand), new_filename))
 
     # list all the remaining folders in incoming folder
     files =os.listdir(incoming_folder)
