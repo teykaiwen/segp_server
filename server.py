@@ -146,7 +146,7 @@ def upload():
     band1_median = band1_median[0]
     # calculate ssc value
     # formula given by client
-    ssc_value = -0.0323 * band1_median + 4.5155
+    ssc_value = -0.0368 * band1_median + 5.2825
     ssc_value = round(ssc_value, 6)
     df['ssc'] = ssc_value
     df.at[1, 'ssc'] = None
@@ -192,7 +192,18 @@ def upload():
     # remove the image file after sending to avoid confusion
     os.remove(os.path.join(results_folder, 'pdf_img.jpg'))
 
-    return jsonify(ssc = ssc_value, pdf_img = byte)
+    # categorisation
+    category = None
+    if ssc_value >= -0.5 and ssc_value < 0:
+        category = 'Clean'
+    
+    elif ssc_value >= 0:
+        category = 'Dirty'
+
+    else:
+        category = 'Not Valid'
+
+    return jsonify(ssc = ssc_value, cat = category, pdf_img = byte)
 
 # run main
 if __name__ == '__main__':
