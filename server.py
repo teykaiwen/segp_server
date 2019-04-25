@@ -146,7 +146,7 @@ def upload():
     band1_median = band1_median[0]
     # calculate ssc value
     # formula given by client
-    ssc_value = -0.0368 * band1_median + 5.2825 +2.5
+    ssc_value = -0.0368 * band1_median + 5.2825 + 2.5
     ssc_value = round(ssc_value, 6)
     df['ssc'] = ssc_value
     df.at[1, 'ssc'] = None
@@ -194,13 +194,13 @@ def upload():
 
     # categorisation
     category = None
-    if ssc_value >= -0.5 and ssc_value < 0:
+    if ssc_value > 0 and ssc_value <= 1.8:
         category = 'Clean'
     
-    elif ssc_value >= 0 and ssc_value < 0.5:
+    elif ssc_value > 1.8 and ssc_value < 2:
         category = 'Average'
 
-    elif ssc_value >= 0.5:
+    elif ssc_value >= 2:
         category = 'Dirty'
 
     else:
