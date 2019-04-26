@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, send_file, jsonify
 from pdf2image import convert_from_path
+from shutil import copyfile
 from PIL import Image
 import pandas as pd
 import datetime
@@ -14,21 +15,20 @@ app = Flask(__name__)
 # get the path of this server script
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
+# path for each folder
+# incoming folder for incoming photos from the app
+# analysed folder is to store photos that has been analysed
+# results folder is to store results of each analysis
+incoming_folder = os.path.join(APP_ROOT, 'incoming/')
+analysed_folder = os.path.join(APP_ROOT, 'analysed/')
+results_folder = os.path.join(APP_ROOT, 'results/')
+
 @app.route("/")
 def index():
     return render_template("upload.html")
 
 @app.route("/upload", methods=['POST'])
 def upload():
-    
-    # path for each folder
-    # incoming folder for incoming photos from the app
-    # analysed folder is to store photos that has been analysed
-    # results folder is to store results of each analysis
-    incoming_folder = os.path.join(APP_ROOT, 'incoming/')
-    analysed_folder = os.path.join(APP_ROOT, 'analysed/')
-    results_folder = os.path.join(APP_ROOT, 'results/')
-
     # accept incoming json
     incoming_json = request.get_json()
     
@@ -210,4 +210,17 @@ def upload():
 
 # run main
 if __name__ == '__main__':
+    # create necessary folders
+    if not os.path.exists(incoming_folder):
+        os.mkdir(incoming_folder)
+
+    if not os.path.exists(analysed_folder):
+        os.mkdir(analysed_folder)
+
+    if not os.path.exists(results_folder):
+        os.mkdir(results_folder)
+        source = (os.path.join(APP_ROOT, "all_results_template.csv"))
+        dest = (os.path.join(results_folder, "all_results.csv"))
+        copyfile(source, dest)
+
     app.run(host='0.0.0.0', debug=False)
